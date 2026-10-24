@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ShoppingBag } from "lucide-react";
+import { Search, ShoppingBag } from "lucide-react";
 
 import { navigation } from "@/config/site";
 import { AnnouncementBar } from "@/components/storefront/announcement-bar";
@@ -22,10 +22,10 @@ export function SiteHeader() {
 
           <nav
             aria-label="Primary navigation"
-            className="hidden items-center gap-8 lg:flex"
+            className="hidden items-center gap-5 lg:flex xl:gap-8"
           >
             {navigation.map((item) => (
-              <a
+              <Link
                 key={item.href}
                 href={item.href}
                 className="group relative py-2 text-[0.68rem] font-semibold tracking-[0.18em] uppercase focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-4 focus-visible:ring-offset-paper focus-visible:outline-none"
@@ -35,14 +35,22 @@ export function SiteHeader() {
                   aria-hidden="true"
                   className="absolute bottom-0 left-0 h-px w-0 bg-accent transition-[width] duration-300 group-hover:w-full"
                 />
-              </a>
+              </Link>
             ))}
           </nav>
 
-          <div className="flex items-center gap-4 justify-self-end lg:gap-6">
-            <span className="hidden text-[0.65rem] font-semibold tracking-[0.18em] text-ink-soft uppercase sm:block">
-              Demo / 01
-            </span>
+          <div className="flex items-center gap-3 justify-self-end lg:gap-5">
+            <Link
+              href="/search"
+              aria-label="Search products"
+              className="flex size-10 items-center justify-center border border-transparent transition-colors hover:border-ink/15 hover:bg-ink/5 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-paper focus-visible:outline-none"
+            >
+              <Search
+                className="size-[1.1rem]"
+                strokeWidth={1.4}
+                aria-hidden="true"
+              />
+            </Link>
             <button
               type="button"
               disabled

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { ArrowDown, ArrowUpRight } from "lucide-react";
 
 import { siteConfig } from "@/config/site";
@@ -42,13 +43,13 @@ export function Hero() {
               </p>
               <div className="flex flex-wrap items-center gap-3 sm:flex-col sm:items-stretch">
                 <Button asChild size="lg" className="w-full sm:w-auto">
-                  <a href="#new-arrivals">
+                  <Link href="/collections/first-studies">
                     Explore the first drop
                     <ArrowDown
                       className="size-4 transition-transform duration-300 group-hover/button:translate-y-1"
                       strokeWidth={1.6}
                     />
-                  </a>
+                  </Link>
                 </Button>
                 <a
                   href="#story"

@@ -50,7 +50,7 @@ function SheetContent({
       <SheetPrimitive.Content
         data-slot="sheet-content"
         className={cn(
-          "sheet-content fixed inset-y-0 right-0 z-50 flex h-full w-full flex-col border-l border-ink/15 bg-paper shadow-2xl outline-none sm:max-w-[28rem]",
+          "sheet-content fixed inset-y-0 right-0 z-50 flex h-full w-full flex-col overflow-y-auto border-l border-ink/15 bg-paper shadow-2xl outline-none sm:max-w-[28rem]",
           className,
         )}
         {...props}

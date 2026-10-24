@@ -1,64 +1,16 @@
-import fs from "node:fs";
-import path from "node:path";
+import { expect, test } from "@playwright/test";
 
-import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "@playwright/test";
+import {
+  captureFullPage,
+  captureViewport,
+  expectNoHorizontalOverflow,
+  getSeriousViolations,
+  settlePage,
+  viewports,
+} from "./helpers";
 
-const screenshotsDir = path.join("screenshots", "phase-1");
-
-const viewports = [
-  { name: "mobile", width: 390, height: 844 },
-  { name: "tablet", width: 768, height: 1024 },
-  { name: "desktop", width: 1440, height: 900 },
-] as const;
-
-async function settlePage(page: Page) {
-  await page.evaluate(async () => {
-    await document.fonts.ready;
-    const step = Math.max(320, Math.round(window.innerHeight * 0.75));
-
-    for (let y = 0; y < document.body.scrollHeight; y += step) {
-      window.scrollTo(0, y);
-      await new Promise((resolve) => window.setTimeout(resolve, 80));
-    }
-
-    window.scrollTo(0, 0);
-    await Promise.all(
-      Array.from(document.images).map((image) => {
-        if (image.complete) return Promise.resolve();
-        return new Promise<void>((resolve) => {
-          image.addEventListener("load", () => resolve(), { once: true });
-          image.addEventListener("error", () => resolve(), { once: true });
-        });
-      }),
-    );
-  });
-
-  await page.waitForTimeout(250);
-}
-
-async function getSeriousViolations(page: Page, include?: string) {
-  let builder = new AxeBuilder({ page });
-  if (include) {
-    builder = builder.include(include);
-  }
-
-  const results = await builder.analyze();
-  return results.violations
-    .filter((violation) =>
-      ["critical", "serious"].includes(violation.impact ?? ""),
-    )
-    .map((violation) => ({
-      id: violation.id,
-      impact: violation.impact,
-      help: violation.help,
-      targets: violation.nodes.map((node) => node.target),
-    }));
-}
-
-test.describe("Phase 1 storefront", () => {
+test.describe("Homepage storefront", () => {
   test.beforeEach(async ({ page }) => {
-    fs.mkdirSync(screenshotsDir, { recursive: true });
     await page.emulateMedia({ reducedMotion: "reduce" });
   });
 
@@ -80,21 +32,9 @@ test.describe("Phase 1 storefront", () => {
         }),
       ).toBeVisible();
       await expect(page.getByRole("contentinfo")).toBeVisible();
+      await expectNoHorizontalOverflow(page, viewport.name);
 
-      const overflow = await page.evaluate(
-        () =>
-          Math.max(
-            document.documentElement.scrollWidth,
-            document.body.scrollWidth,
-          ) - window.innerWidth,
-      );
-      expect(overflow).toBeLessThanOrEqual(1);
-
-      await page.screenshot({
-        path: path.join(screenshotsDir, `${viewport.name}.png`),
-        fullPage: true,
-        animations: "disabled",
-      });
+      await captureFullPage(page, viewport.name);
     });
   }
 
@@ -110,15 +50,7 @@ test.describe("Phase 1 storefront", () => {
           name: /move like water/i,
         }),
       ).toBeVisible();
-
-      const overflow = await page.evaluate(
-        () =>
-          Math.max(
-            document.documentElement.scrollWidth,
-            document.body.scrollWidth,
-          ) - window.innerWidth,
-      );
-      expect(overflow, `overflow at ${width}px`).toBeLessThanOrEqual(1);
+      await expectNoHorizontalOverflow(page, `${width}px`);
     }
   });
 
@@ -147,19 +79,17 @@ test.describe("Phase 1 storefront", () => {
 
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
-    await expect(dialog.getByRole("link", { name: /the drop/i })).toBeVisible();
+    await expect(dialog.getByRole("link", { name: "Tees" })).toBeVisible();
+    await expect(dialog.getByRole("link", { name: "Fleece" })).toBeVisible();
+    await expect(dialog.getByRole("link", { name: "Search" })).toBeVisible();
 
-    await page.screenshot({
-      path: path.join(screenshotsDir, "mobile-menu.png"),
-      animations: "disabled",
-    });
+    await captureViewport(page, "mobile-menu");
 
     await page.keyboard.press("Tab");
     const focusIsInsideDialog = await page.evaluate(
       () => document.activeElement?.closest('[role="dialog"]') !== null,
     );
     expect(focusIsInsideDialog).toBe(true);
-
     expect(await getSeriousViolations(page, '[role="dialog"]')).toEqual([]);
 
     await page.keyboard.press("Escape");
@@ -167,23 +97,45 @@ test.describe("Phase 1 storefront", () => {
     await expect(trigger).toBeFocused();
   });
 
-  test("desktop navigation is available and the mobile trigger is hidden", async ({
+  test("desktop navigation routes to the catalogue without overlap at 1024px", async ({
     page,
   }) => {
-    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.setViewportSize({ width: 1024, height: 900 });
     await page.goto("/");
 
     const primaryNav = page.getByRole("navigation", {
       name: "Primary navigation",
     });
+    const searchLink = page.getByRole("link", { name: "Search products" });
+    const navBox = await primaryNav.boundingBox();
+    const searchBox = await searchLink.boundingBox();
+
     await expect(primaryNav).toBeVisible();
-    await expect(
-      primaryNav.getByRole("link", { name: "New arrivals" }),
-    ).toBeVisible();
+    await expect(searchLink).toBeVisible();
     await expect(page.getByRole("button", { name: "Open menu" })).toBeHidden();
+    expect(navBox).not.toBeNull();
+    expect(searchBox).not.toBeNull();
+
+    if (navBox && searchBox) {
+      expect(navBox.x + navBox.width).toBeLessThanOrEqual(searchBox.x - 8);
+    }
 
     await primaryNav.getByRole("link", { name: "New arrivals" }).click();
-    await expect(page).toHaveURL(/#new-arrivals$/);
+    await expect(page).toHaveURL(/\/collections\/first-studies$/);
+    await expect(
+      page.getByRole("heading", { level: 1, name: /first studies/i }),
+    ).toBeVisible();
+  });
+
+  test("search icon in the header opens the search page", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+
+    await page.getByRole("link", { name: "Search products" }).click();
+    await expect(page).toHaveURL(/\/search$/);
+    await expect(
+      page.getByRole("heading", { level: 1, name: /search the study/i }),
+    ).toBeVisible();
   });
 
   for (const viewport of [

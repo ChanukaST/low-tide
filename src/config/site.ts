@@ -12,14 +12,23 @@ export const siteConfig = {
 } as const;
 
 export const navigation = [
-  { label: "New arrivals", href: "#new-arrivals" },
-  { label: "The drop", href: "#featured" },
-  { label: "Our story", href: "#story" },
+  { label: "New arrivals", href: "/collections/first-studies" },
+  { label: "Tees", href: "/collections/tees" },
+  { label: "Fleece", href: "/collections/fleece" },
+  { label: "Accessories", href: "/collections/accessories" },
+  { label: "Our story", href: "/#story" },
 ] as const;
 
-export const footerNavigation = [
-  { label: "The drop", href: "#featured" },
-  { label: "New arrivals", href: "#new-arrivals" },
-  { label: "Our story", href: "#story" },
+export const footerShopNavigation = [
+  { label: "New arrivals", href: "/collections/first-studies" },
+  { label: "Tees", href: "/collections/tees" },
+  { label: "Fleece", href: "/collections/fleece" },
+  { label: "Accessories", href: "/collections/accessories" },
+] as const;
+
+export const footerMoreNavigation = [
+  { label: "Search", href: "/search" },
+  { label: "Size guide", href: "/size-guide" },
+  { label: "Our story", href: "/#story" },
   { label: "Back to top", href: "#top" },
 ] as const;

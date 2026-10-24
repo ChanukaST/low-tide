@@ -1,6 +1,28 @@
+import type { ReactNode } from "react";
+import Link from "next/link";
 import { ArrowUp, ArrowUpRight } from "lucide-react";
 
-import { footerNavigation, siteConfig } from "@/config/site";
+import {
+  footerMoreNavigation,
+  footerShopNavigation,
+  siteConfig,
+} from "@/config/site";
+
+function FooterLink({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className="group inline-flex items-center gap-2 text-[0.76rem] text-paper-soft transition-colors hover:text-paper focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-4 focus-visible:ring-offset-ink focus-visible:outline-none"
+    >
+      {children}
+      <ArrowUpRight
+        className="size-3 text-paper-soft transition-[color,transform] duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-accent"
+        strokeWidth={1.5}
+        aria-hidden="true"
+      />
+    </Link>
+  );
+}
 
 export function SiteFooter() {
   return (
@@ -11,7 +33,7 @@ export function SiteFooter() {
             <span aria-hidden="true" className="block size-1.5 bg-accent" />
             SS26 / First studies
           </div>
-          <a
+          <Link
             href="#top"
             className="group flex items-center gap-2 text-[0.65rem] font-semibold tracking-[0.16em] text-paper-soft uppercase transition-colors hover:text-paper focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-4 focus-visible:ring-offset-ink focus-visible:outline-none"
           >
@@ -19,14 +41,18 @@ export function SiteFooter() {
             <ArrowUp
               className="size-3.5 transition-transform duration-300 group-hover:-translate-y-0.5"
               strokeWidth={1.5}
+              aria-hidden="true"
             />
-          </a>
+          </Link>
         </div>
 
         <div className="grid gap-12 py-16 lg:grid-cols-12 lg:gap-8 lg:py-20">
           <div className="lg:col-span-8">
             <p className="max-w-xl font-editorial text-[1.6rem] leading-[1.15] tracking-[-0.015em] text-paper/70 italic sm:text-[2.05rem]">
               A slower kind of streetwear, for the long way home.
+            </p>
+            <p className="mt-5 text-[0.625rem] font-semibold tracking-[0.15em] text-paper-soft uppercase">
+              {siteConfig.location} / {siteConfig.coordinates}
             </p>
             <p className="mt-10 font-display text-[clamp(4.5rem,14.6vw,14rem)] leading-[0.74] tracking-[-0.045em] uppercase">
               <span aria-hidden="true">
@@ -40,21 +66,12 @@ export function SiteFooter() {
           <div className="grid grid-cols-2 gap-8 lg:col-span-3 lg:col-start-10">
             <div>
               <p className="text-[0.65rem] font-semibold tracking-[0.18em] text-paper-soft uppercase">
-                Explore
+                Shop
               </p>
               <ul className="mt-5 space-y-3.5">
-                {footerNavigation.map((item) => (
+                {footerShopNavigation.map((item) => (
                   <li key={item.href}>
-                    <a
-                      href={item.href}
-                      className="group inline-flex items-center gap-2 text-[0.76rem] text-paper-soft transition-colors hover:text-paper focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-4 focus-visible:ring-offset-ink focus-visible:outline-none"
-                    >
-                      {item.label}
-                      <ArrowUpRight
-                        className="size-3 text-paper-soft transition-[color,transform] duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-accent"
-                        strokeWidth={1.5}
-                      />
-                    </a>
+                    <FooterLink href={item.href}>{item.label}</FooterLink>
                   </li>
                 ))}
               </ul>
@@ -62,18 +79,15 @@ export function SiteFooter() {
 
             <div>
               <p className="text-[0.65rem] font-semibold tracking-[0.18em] text-paper-soft uppercase">
-                Studio
+                More
               </p>
-              <div className="mt-5 space-y-3.5 text-[0.76rem] leading-relaxed text-paper-soft">
-                <p>{siteConfig.location}</p>
-                <p>{siteConfig.coordinates}</p>
-                <p>
-                  Instagram
-                  <span className="mt-0.5 block text-[0.625rem] tracking-[0.12em] text-paper-soft uppercase">
-                    Coming soon
-                  </span>
-                </p>
-              </div>
+              <ul className="mt-5 space-y-3.5">
+                {footerMoreNavigation.map((item) => (
+                  <li key={item.href}>
+                    <FooterLink href={item.href}>{item.label}</FooterLink>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </div>

@@ -1,4 +1,6 @@
-import type { GarmentArtKind } from "@/types/product";
+import type { ReactNode } from "react";
+
+import type { GarmentArtKind } from "@/types/catalog";
 import { cn } from "@/lib/utils";
 
 type ProductArtProps = {
@@ -7,6 +9,8 @@ type ProductArtProps = {
   foreground: string;
   name: string;
   className?: string;
+  minimal?: boolean;
+  decorative?: boolean;
 };
 
 const ACCENT = "#ff4b1f";
@@ -26,11 +30,15 @@ function Frame({
   foreground,
   children,
   label,
+  showChrome = true,
+  decorative = false,
 }: {
   background: string;
   foreground: string;
-  children: React.ReactNode;
+  children: ReactNode;
   label: string;
+  showChrome?: boolean;
+  decorative?: boolean;
 }) {
   const meta = isDark(background) ? PAPER : INK;
 
@@ -42,8 +50,13 @@ function Frame({
       <svg
         viewBox="0 0 480 600"
         className="h-full w-full"
-        role="img"
-        aria-label={`${label}. Original demo garment illustration.`}
+        role={decorative ? undefined : "img"}
+        aria-hidden={decorative ? "true" : undefined}
+        aria-label={
+          decorative
+            ? undefined
+            : `${label}. Original demo garment illustration.`
+        }
       >
         <defs>
           <linearGradient
@@ -126,51 +139,59 @@ function Frame({
             opacity="0.28"
           />
         ))}
-        <text
-          x="26"
-          y="50"
-          fill={meta}
-          opacity="0.55"
-          fontFamily="var(--font-archivo), sans-serif"
-          fontSize="7"
-          fontWeight="600"
-          letterSpacing="1.8"
-        >
-          LOW TIDE / SS26
-        </text>
-        <text
-          x="454"
-          y="50"
-          fill={meta}
-          opacity="0.55"
-          textAnchor="end"
-          fontFamily="var(--font-archivo), sans-serif"
-          fontSize="7"
-          fontWeight="600"
-          letterSpacing="1.8"
-        >
-          SAMPLE
-        </text>
+        {showChrome ? (
+          <>
+            <text
+              x="26"
+              y="50"
+              fill={meta}
+              opacity="0.55"
+              fontFamily="var(--font-archivo), sans-serif"
+              fontSize="7"
+              fontWeight="600"
+              letterSpacing="1.8"
+            >
+              LOW TIDE / SS26
+            </text>
+            <text
+              x="454"
+              y="50"
+              fill={meta}
+              opacity="0.55"
+              textAnchor="end"
+              fontFamily="var(--font-archivo), sans-serif"
+              fontSize="7"
+              fontWeight="600"
+              letterSpacing="1.8"
+            >
+              SAMPLE
+            </text>
+          </>
+        ) : null}
         <g>{children}</g>
         <rect
           width="480"
           height="600"
           fill={`url(#art-dots-${artId(background, foreground)})`}
         />
-        <rect x="26" y="558" width="22" height="2" fill={ACCENT} />
-        <text
-          x="454"
-          y="563"
-          fill={meta}
-          opacity="0.48"
-          textAnchor="end"
-          fontFamily="var(--font-archivo), sans-serif"
-          fontSize="6.5"
-          fontWeight="500"
-          letterSpacing="1.5"
-        >
-          DEMO / NOT FOR SALE
-        </text>
+        {showChrome ? (
+          <>
+            <rect x="26" y="558" width="22" height="2" fill={ACCENT} />
+            <text
+              x="454"
+              y="563"
+              fill={meta}
+              opacity="0.48"
+              textAnchor="end"
+              fontFamily="var(--font-archivo), sans-serif"
+              fontSize="6.5"
+              fontWeight="500"
+              letterSpacing="1.5"
+            >
+              DEMO / NOT FOR SALE
+            </text>
+          </>
+        ) : null}
       </svg>
       <div
         aria-hidden="true"
@@ -197,7 +218,7 @@ function GarmentText({
 }: {
   x: number;
   y: number;
-  children: React.ReactNode;
+  children: ReactNode;
   fill: string;
   size?: number;
   anchor?: "start" | "middle" | "end";
@@ -226,14 +247,27 @@ export function ProductArt({
   foreground,
   name,
   className,
+  minimal = false,
+  decorative = false,
 }: ProductArtProps) {
   const id = artId(background, foreground);
 
   return (
     <div className={cn("h-full w-full", className)}>
-      <Frame background={background} foreground={foreground} label={name}>
+      <Frame
+        background={background}
+        foreground={foreground}
+        label={name}
+        showChrome={!minimal}
+        decorative={decorative}
+      >
         {artKind === "oversized-tee" || artKind === "graphic-tee" ? (
-          <TeeArt kind={artKind} foreground={foreground} id={id} />
+          <TeeArt
+            kind={artKind}
+            background={background}
+            foreground={foreground}
+            id={id}
+          />
         ) : null}
         {artKind === "hoodie" ? (
           <HoodieArt foreground={foreground} id={id} />
@@ -249,10 +283,12 @@ export function ProductArt({
 
 function TeeArt({
   kind,
+  background,
   foreground,
   id,
 }: {
   kind: "oversized-tee" | "graphic-tee";
+  background: string;
   foreground: string;
   id: string;
 }) {
@@ -268,8 +304,8 @@ function TeeArt({
       <path d={body} fill={`url(#art-light-${id})`} opacity="0.55" />
       <path
         d="M190 104C210 137 270 137 290 104C274 94 206 94 190 104Z"
-        fill={darkGarment ? "#0b0b0a" : "#e8e1d4"}
-        opacity="0.85"
+        fill={background}
+        opacity="0.92"
       />
       <path
         d="M190 104C210 137 270 137 290 104"
@@ -400,7 +436,7 @@ function TeeArt({
 }
 
 function HoodieArt({ foreground, id }: { foreground: string; id: string }) {
-  const seam = PAPER;
+  const seam = isDark(foreground) ? PAPER : INK;
 
   return (
     <g>
