@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { Search, ShoppingBag } from "lucide-react";
+import { Search } from "lucide-react";
 
 import { navigation } from "@/config/site";
+import { CartBagLink } from "@/components/cart/cart-bag-link";
 import { AnnouncementBar } from "@/components/storefront/announcement-bar";
 import { MobileNav } from "@/components/storefront/mobile-nav";
 import { Wordmark } from "@/components/storefront/wordmark";
@@ -11,7 +12,7 @@ export function SiteHeader() {
     <>
       <AnnouncementBar />
       <header className="sticky top-0 z-40 border-b border-ink/15 bg-paper/95 backdrop-blur-md">
-        <div className="shell grid h-16 grid-cols-[1fr_auto_1fr] items-center gap-4 lg:h-[4.5rem]">
+        <div className="shell grid h-16 grid-cols-[auto_1fr_auto] items-center gap-4 lg:h-[4.5rem] lg:grid-cols-[1fr_auto_1fr]">
           <Link
             href="/"
             className="w-fit justify-self-start focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-4 focus-visible:ring-offset-paper focus-visible:outline-none"
@@ -51,21 +52,7 @@ export function SiteHeader() {
                 aria-hidden="true"
               />
             </Link>
-            <button
-              type="button"
-              disabled
-              title="Cart functionality arrives in Phase 3"
-              className="flex cursor-not-allowed items-center gap-2 text-[0.68rem] font-semibold tracking-[0.16em] uppercase"
-              aria-label="Shopping bag, empty. Cart functionality will be added in Phase 3."
-            >
-              <ShoppingBag
-                className="size-[1.1rem]"
-                strokeWidth={1.4}
-                aria-hidden="true"
-              />
-              <span className="hidden sm:inline">Bag</span>
-              <span className="text-ink-soft">(0)</span>
-            </button>
+            <CartBagLink />
             <MobileNav />
           </div>
         </div>

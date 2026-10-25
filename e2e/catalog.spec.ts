@@ -101,7 +101,7 @@ test.describe("Catalogue and product experience", () => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/products/core-hoodie");
 
-    const status = page.getByRole("status");
+    const status = page.getByTestId("variant-stock-status");
 
     await expect(
       page.getByRole("button", { name: "Select a size" }),
@@ -113,7 +113,7 @@ test.describe("Catalogue and product experience", () => {
     await expect(page.getByText("LT-HOO-COR-INK-S")).toBeVisible();
     await expect(
       page.getByRole("button", { name: "Add to bag" }),
-    ).toBeDisabled();
+    ).toBeEnabled();
 
     await page.getByRole("button", { name: "Stone", exact: true }).click();
     await expect(status).toContainText("Select a size");
@@ -132,7 +132,7 @@ test.describe("Catalogue and product experience", () => {
     await expect(page.getByText("LT-HOO-COR-STO-M")).toBeVisible();
     await expect(
       page.getByRole("button", { name: "Add to bag" }),
-    ).toBeDisabled();
+    ).toBeEnabled();
   });
 
   test("gallery thumbnails change the active product study", async ({

@@ -15,6 +15,7 @@ import {
   getVariantStock,
 } from "@/lib/variants";
 import { cn } from "@/lib/utils";
+import { useCart } from "@/components/cart/cart-provider";
 import { Button } from "@/components/ui/button";
 
 type ProductVariantSelectorProps = {
@@ -36,6 +37,8 @@ export function ProductVariantSelector({
     firstColorWithStock?.id ?? "",
   );
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const { addItem, getItemQuantity, hydrated } = useCart();
 
   const selectedColor =
     colors.find((color) => color.id === selectedColorId) ?? colors[0];
@@ -45,6 +48,14 @@ export function ProductVariantSelector({
       : undefined;
   const selectedStock = selectedVariant?.stockQuantity ?? 0;
   const productSoldOut = getProductStock(product) === 0;
+  const inBagQuantity = selectedVariant
+    ? getItemQuantity(selectedVariant.id)
+    : 0;
+  const atStockLimit = Boolean(
+    selectedVariant && inBagQuantity >= selectedStock,
+  );
+  const addDisabled =
+    !hydrated || !selectedVariant || selectedStock <= 0 || atStockLimit;
   const stockState =
     selectedSize && selectedColor
       ? getStockState(selectedStock)
@@ -52,6 +63,7 @@ export function ProductVariantSelector({
 
   function handleColorChange(colorId: string) {
     setSelectedColorId(colorId);
+    setFeedback(null);
 
     if (selectedSize && getVariantStock(product, colorId, selectedSize) <= 0) {
       setSelectedSize(null);
@@ -60,6 +72,16 @@ export function ProductVariantSelector({
 
   function handleSizeChange(size: string) {
     setSelectedSize(size);
+    setFeedback(null);
+  }
+
+  function handleAddToBag() {
+    if (addDisabled || !selectedVariant || !selectedColor) return;
+
+    addItem(selectedVariant.id, 1, selectedStock);
+    setFeedback(
+      `Added ${product.name} — ${selectedColor.name} / ${selectedVariant.size} to bag.`,
+    );
   }
 
   return (
@@ -153,6 +175,7 @@ export function ProductVariantSelector({
       </fieldset>
 
       <div
+        data-testid="variant-stock-status"
         className="mt-6 flex min-h-[3rem] flex-col justify-center border-y border-ink/10 py-3"
         role="status"
         aria-live="polite"
@@ -186,19 +209,50 @@ export function ProductVariantSelector({
 
       <Button
         type="button"
-        disabled
+        onClick={handleAddToBag}
+        disabled={addDisabled}
         size="lg"
-        className="mt-5 w-full disabled:cursor-not-allowed disabled:opacity-100"
+        className="mt-5 w-full disabled:cursor-not-allowed"
       >
         {productSoldOut
           ? "Sold out"
-          : selectedVariant && selectedStock > 0
-            ? "Add to bag"
-            : "Select a size"}
+          : !selectedVariant
+            ? "Select a size"
+            : atStockLimit
+              ? "Maximum stock in bag"
+              : "Add to bag"}
       </Button>
+
+      <p className="sr-only" role="status" aria-live="polite">
+        {feedback ?? ""}
+      </p>
+
+      {feedback ? (
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border border-ink/15 px-3 py-2.5">
+          <p className="text-[0.68rem] leading-relaxed text-ink-soft">
+            {feedback}
+            {inBagQuantity > 0 ? ` ${inBagQuantity} in bag.` : ""}
+          </p>
+          <Link
+            href="/cart"
+            className="group inline-flex shrink-0 items-center gap-1.5 text-[0.62rem] font-semibold tracking-[0.12em] text-ink uppercase underline decoration-ink/20 underline-offset-4 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+          >
+            View bag
+            <ArrowUpRight
+              className="size-3 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+              strokeWidth={1.5}
+              aria-hidden="true"
+            />
+          </Link>
+        </div>
+      ) : null}
+
       <p className="mt-3 flex items-start justify-between gap-3 text-[0.6rem] leading-relaxed text-ink-soft">
-        <span>Prototype only — the bag and checkout are not active yet.</span>
-        <span className="shrink-0 tracking-[0.1em] uppercase">Phase 3</span>
+        <span>
+          Saved on this device. Checkout and server-side totals arrive in Phase
+          5.
+        </span>
+        <span className="shrink-0 tracking-[0.1em] uppercase">Demo bag</span>
       </p>
 
       <details className="group mt-8 border-t border-ink/15">

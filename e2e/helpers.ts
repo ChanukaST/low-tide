@@ -4,7 +4,7 @@ import path from "node:path";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page } from "@playwright/test";
 
-export const screenshotsDir = path.join("screenshots", "phase-2");
+export const screenshotsDir = path.join("screenshots", "phase-3");
 
 export const viewports = [
   { name: "mobile", width: 390, height: 844 },
@@ -32,6 +32,12 @@ export async function settlePage(page: Page) {
         });
       }),
     );
+  });
+
+  await page.evaluate(() => {
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
   });
 
   await page.waitForTimeout(250);

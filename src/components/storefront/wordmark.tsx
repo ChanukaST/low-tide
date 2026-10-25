@@ -10,7 +10,7 @@ export function Wordmark({ className, markClassName }: WordmarkProps) {
   return (
     <span
       className={cn(
-        "inline-flex items-start gap-1 font-display text-[1.55rem] leading-none tracking-[-0.035em] uppercase",
+        "inline-flex items-start gap-1 font-display text-[1.55rem] leading-none tracking-[-0.035em] whitespace-nowrap uppercase",
         className,
       )}
     >
